@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Human vs Animal Languages — Interactive E-Book</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #fdf8f0;
+    --warm-white: #fffdf8;
+    --ink: #1a1409;
+    --brown: #6b4c2a;
+    --amber: #d4860a;
+    --amber-light: #f5c842;
+    --teal: #1a7a6e;
+    --teal-light: #e6f5f3;
+    --red: #c0392b;
+    --blue: #1a5276;
+    --blue-light: #d6eaf8;
+    --gray: #7f8c8d;
+    --light-gray: #ecf0f1;
+    --shadow: rgba(0,0,0,0.12);
+    --page-width: 860px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #2c2318;
+    font-family: 'Lato', sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0;
+    background-image: radial-gradient(ellipse at 20% 50%, #3d2e1a 0%, #1a100a 100%);
+  }
+
+  /* ===== TOP NAV BAR ===== */
+  #topbar {
+    width: 100%;
+    background: rgba(26,16,9,0.95);
+    border-bottom: 2px solid var(--amber);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+  }
+  #topbar .book-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem;
+    color: var(--amber-light);
+    letter-spacing: 0.04em;
+  }
+  #nav-btns { display: flex; gap: 10px; align-items: center; }
+  .nav-btn {
+    background: none;
+    border: 1.5px solid var(--amber);
+    color: var(--amber-light);
+    font-family: 'Lato', sans-serif;
+    font-size: 0.82rem;
+    padding: 5px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .nav-btn:hover, .nav-btn.active {
+    background: var(--amber);
+    color: #1a100a;
+    font-weight: 700;
+  }
+  #page-counter {
+    font-size: 0.82rem;
+    color: var(--gray);
+    min-width: 70px;
+    text-align: right;
+  }
+
+  /* ===== COVER PAGE ===== */
+  #cover {
+    width: 100%;
+    max-width: var(--page-width);
+    min-height: calc(100vh - 52px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+  }
+  .cover-illustration {
+    width: 340px;
+    height: 240px;
+    margin-bottom: 40px;
+    filter: drop-shadow(0 8px 24px rgba(0,0,0,0.5));
+  }
+  .cover-label {
+    font-family: 'Lato', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    font-size: 0.75rem;
+    color: var(--amber);
+    margin-bottom: 16px;
+  }
+  .cover-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    color: var(--amber-light);
+    text-align: center;
+    line-height: 1.15;
+    margin-bottom: 12px;
+  }
+  .cover-subtitle {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--gray);
+    margin-bottom: 48px;
+    text-align: center;
+  }
+  .cover-chapters {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 48px;
+  }
+  .chap-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(212,134,10,0.4);
+    color: var(--amber-light);
+    font-family: 'Lato', sans-serif;
+    font-size: 0.85rem;
+    padding: 10px 22px;
+    border-radius: 28px;
+    cursor: pointer;
+    transition: all 0.25s;
+    letter-spacing: 0.04em;
+  }
+  .chap-btn:hover {
+    background: var(--amber);
+    color: #1a100a;
+    border-color: var(--amber);
+    font-weight: 700;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(212,134,10,0.3);
+  }
+  .start-btn {
+    background: var(--amber);
+    color: #1a100a;
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 14px 48px;
+    border: none;
+    border-radius: 32px;
+    cursor: pointer;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: all 0.25s;
+    box-shadow: 0 4px 20px rgba(212,134,10,0.4);
+  }
+  .start-btn:hover {
+    background: var(--amber-light);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 28px rgba(212,134,10,0.5);
+  }
+
+  /* ===== BOOK PAGES ===== */
+  .page {
+    display: none;
+    width: 100%;
+    max-width: var(--page-width);
+    min-height: calc(100vh - 52px);
+    padding: 48px 52px 64px;
+    animation: fadeSlide 0.4s ease;
+  }
+  .page.active { display: block; }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== SECTION HEADERS ===== */
+  .section-label {
+    display: inline-block;
+    font-family: 'Lato', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-size: 0.7rem;
+    color: var(--amber);
+    background: rgba(212,134,10,0.12);
+    padding: 4px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(212,134,10,0.3);
+    margin-bottom: 18px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    color: var(--amber-light);
+    margin-bottom: 6px;
+    line-height: 1.2;
+  }
+  .section-title.red { color: #e88a7a; }
+  .divider {
+    width: 56px;
+    height: 3px;
+    background: var(--amber);
+    border-radius: 2px;
+    margin: 16px 0 32px;
+  }
+
+  /* ===== ARTICLE PAGE ===== */
+  .article-body {
+    background: var(--warm-white);
+    border-radius: 12px;
+    padding: 36px 40px;
+    line-height: 1.9;
+    font-size: 1.02rem;
+    color: #2c2008;
+    box-shadow: 0 4px 24px var(--shadow);
+    border-left: 4px solid var(--amber);
+  }
+  .article-body p { margin-bottom: 20px; }
+  .article-body p:last-child { margin-bottom: 0; }
+  .keyword {
+    color: var(--teal);
+    font-weight: 700;
+    border-bottom: 2px dotted var(--teal);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .keyword:hover {
+    color: var(--amber);
+    border-bottom-color: var(--amber);
+  }
+  .keyword-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1409;
+    color: var(--amber-light);
+    font-size: 0.78rem;
+    font-weight: 400;
+    white-space: nowrap;
+    padding: 5px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--amber);
+    z-index: 20;
+    pointer-events: none;
+    font-family: 'Noto Sans TC', sans-serif;
+  }
+  .keyword:hover .keyword-tooltip { display: block; }
+
+  /* ===== VOCABULARY PAGE ===== */
+  .vocab-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 640px) { .vocab-grid { grid-template-columns: 1fr; } }
+  .vocab-card {
+    background: var(--warm-white);
+    border-radius: 10px;
+    padding: 20px 22px;
+    box-shadow: 0 2px 12px var(--shadow);
+    border-top: 3px solid var(--teal);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .vocab-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+  }
+  .vocab-word {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem;
+    color: var(--blue);
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .vocab-pos {
+    font-size: 0.75rem;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+  .vocab-zh {
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 0.95rem;
+    color: var(--teal);
+    font-weight: 700;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed #d0d0d0;
+  }
+  .vocab-ex {
+    font-size: 0.88rem;
+    color: #444;
+    line-height: 1.65;
+    margin-bottom: 3px;
+  }
+  .vocab-ex-zh {
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 0.82rem;
+    color: var(--gray);
+    line-height: 1.5;
+  }
+
+  /* ===== GRAMMAR PAGE ===== */
+  .grammar-card {
+    background: var(--warm-white);
+    border-radius: 10px;
+    padding: 22px 26px;
+    box-shadow: 0 2px 12px var(--shadow);
+    margin-bottom: 16px;
+    border-left: 4px solid var(--blue);
+  }
+  .grammar-pattern {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: var(--blue);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .grammar-desc {
+    font-size: 0.85rem;
+    color: var(--gray);
+    margin-bottom: 10px;
+    font-style: italic;
+  }
+  .grammar-example {
+    background: var(--blue-light);
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-size: 0.9rem;
+    color: var(--blue);
+    font-weight: 700;
+    margin-bottom: 8px;
+    border-left: 3px solid var(--blue);
+  }
+  .grammar-subs {
+    font-size: 0.88rem;
+    color: #444;
+    line-height: 1.7;
+  }
+  .grammar-subs .zh {
+    font-family: 'Noto Sans TC', sans-serif;
+    color: var(--gray);
+    font-size: 0.82rem;
+  }
+
+  /* ===== QUIZ PAGE ===== */
+  .quiz-intro {
+    color: var(--amber-light);
+    font-size: 0.95rem;
+    margin-bottom: 28px;
+    opacity: 0.8;
+  }
+  .q-section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    color: var(--amber-light);
+    margin-bottom: 18px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(212,134,10,0.3);
+  }
+  .question-block {
+    background: var(--warm-white);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 10px var(--shadow);
+  }
+  .question-text {
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: #1a1409;
+    margin-bottom: 14px;
+  }
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .option-btn {
+    background: #f4f4f4;
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Lato', sans-serif;
+    color: #2c2008;
+  }
+  .option-btn:hover:not(:disabled) {
+    background: var(--blue-light);
+    border-color: var(--blue);
+    color: var(--blue);
+  }
+  .option-btn.correct { background: #d5f5e3; border-color: #27ae60; color: #1e8449; font-weight: 700; }
+  .option-btn.wrong   { background: #fadbd8; border-color: #e74c3c; color: #c0392b; }
+  .option-btn:disabled { cursor: default; opacity: 0.85; }
+  .feedback-msg {
+    font-size: 0.85rem;
+    margin-top: 8px;
+    font-weight: 700;
+    display: none;
+  }
+  .feedback-msg.show { display: block; }
+  .feedback-msg.ok { color: #27ae60; }
+  .feedback-msg.nope { color: #c0392b; }
+
+  /* Cloze */
+  .cloze-block {
+    background: var(--warm-white);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 10px var(--shadow);
+    font-size: 0.98rem;
+    color: #2c2008;
+  }
+  .cloze-num { font-weight: 700; color: var(--blue); margin-right: 6px; }
+  .cloze-input {
+    border: none;
+    border-bottom: 2.5px solid var(--amber);
+    background: transparent;
+    width: 160px;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.98rem;
+    color: var(--teal);
+    font-weight: 700;
+    outline: none;
+    padding: 2px 4px;
+    margin: 0 4px;
+    transition: border-color 0.2s;
+  }
+  .cloze-input:focus { border-bottom-color: var(--blue); }
+  .cloze-input.correct { border-bottom-color: #27ae60; color: #27ae60; }
+  .cloze-input.wrong   { border-bottom-color: #c0392b; color: #c0392b; }
+  .word-bank {
+    background: rgba(212,134,10,0.1);
+    border: 1.5px solid rgba(212,134,10,0.35);
+    border-radius: 10px;
+    padding: 14px 20px;
+    margin-bottom: 22px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .word-bank-label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--amber);
+    font-weight: 700;
+    margin-right: 4px;
+  }
+  .word-chip {
+    background: var(--amber);
+    color: #1a100a;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 4px 14px;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .word-chip:hover { background: var(--amber-light); transform: scale(1.05); }
+  .word-chip.used { opacity: 0.3; pointer-events: none; }
+  .check-btn {
+    background: var(--teal);
+    color: white;
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+    font-size: 0.92rem;
+    padding: 11px 32px;
+    border: none;
+    border-radius: 24px;
+    cursor: pointer;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    margin-top: 8px;
+    margin-right: 10px;
+    transition: all 0.2s;
+  }
+  .check-btn:hover { background: #14605a; transform: translateY(-1px); }
+  .reset-btn {
+    background: none;
+    border: 1.5px solid var(--gray);
+    color: var(--gray);
+    font-family: 'Lato', sans-serif;
+    font-size: 0.88rem;
+    padding: 10px 24px;
+    border-radius: 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .reset-btn:hover { border-color: var(--red); color: var(--red); }
+
+  /* ===== ANSWERS PAGE ===== */
+  .answer-block {
+    background: var(--warm-white);
+    border-radius: 12px;
+    padding: 28px 32px;
+    box-shadow: 0 2px 14px var(--shadow);
+    margin-bottom: 20px;
+  }
+  .answer-block h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    color: var(--blue);
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--blue-light);
+  }
+  .answer-item {
+    font-size: 0.94rem;
+    line-height: 1.85;
+    color: #2c2008;
+    padding: 6px 0;
+    border-bottom: 1px dashed #e0e0e0;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .answer-item:last-child { border-bottom: none; }
+  .ans-num { color: var(--amber); font-weight: 700; min-width: 26px; }
+  .ans-key { color: var(--teal); font-weight: 700; }
+  .ans-exp { color: var(--gray); font-size: 0.88rem; }
+
+  /* ===== BOTTOM CONTROLS ===== */
+  #bottom-controls {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(26,16,9,0.97);
+    border-top: 1px solid rgba(212,134,10,0.3);
+    padding: 12px 28px;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    z-index: 90;
+    backdrop-filter: blur(10px);
+  }
+  #bottom-controls.visible { display: flex; }
+  .ctrl-btn {
+    background: rgba(255,255,255,0.08);
+    border: 1.5px solid rgba(212,134,10,0.35);
+    color: var(--amber-light);
+    font-family: 'Lato', sans-serif;
+    font-size: 0.88rem;
+    padding: 8px 22px;
+    border-radius: 22px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.04em;
+  }
+  .ctrl-btn:hover { background: var(--amber); color: #1a100a; border-color: var(--amber); font-weight: 700; }
+  .ctrl-btn:disabled { opacity: 0.3; cursor: default; }
+  .ctrl-btn.home { background: none; border: none; font-size: 1.1rem; padding: 8px 10px; }
+  .ctrl-btn.home:hover { background: rgba(255,255,255,0.1); }
+  #progress-bar {
+    position: fixed;
+    bottom: 52px;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--amber), var(--amber-light));
+    border-radius: 2px;
+    z-index: 89;
+    transition: width 0.5s ease;
+    display: none;
+  }
+
+  /* ===== SCORE BANNER ===== */
+  #score-banner {
+    background: linear-gradient(135deg, var(--teal), #0e4f47);
+    border-radius: 12px;
+    padding: 18px 28px;
+    text-align: center;
+    margin-top: 24px;
+    display: none;
+    color: white;
+    font-size: 1.05rem;
+  }
+  #score-banner.show { display: block; animation: fadeSlide 0.4s ease; }
+  #score-banner strong { font-size: 1.5rem; color: var(--amber-light); }
+
+  /* ===== DECORATIVE ORNAMENTS ===== */
+  .ornament {
+    text-align: center;
+    color: rgba(212,134,10,0.35);
+    font-size: 1.4rem;
+    letter-spacing: 0.6em;
+    margin: 28px 0;
+    user-select: none;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: #1a100a; }
+  ::-webkit-scrollbar-thumb { background: var(--amber); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="book-title">Differences Between Human and Animal Languages</div>
+  <div id="nav-btns">
+    <button class="nav-btn" onclick="goTo('cover')">Cover</button>
+    <button class="nav-btn" onclick="goToPage(0)">Article</button>
+    <button class="nav-btn" onclick="goToPage(1)">Vocab</button>
+    <button class="nav-btn" onclick="goToPage(2)">Grammar</button>
+    <button class="nav-btn" onclick="goToPage(3)">Quiz</button>
+    <button class="nav-btn" onclick="goToPage(4)">Answers</button>
+  </div>
+  <div id="page-counter"></div>
+</div>
+
+<!-- PROGRESS BAR -->
+<div id="progress-bar"></div>
+
+<!-- ===== COVER PAGE ===== -->
+<div id="cover" style="display:flex; flex-direction:column; align-items:center;">
+  <div class="cover-label">Interactive E-Book · English Learning</div>
+  <!-- Cover SVG illustration -->
+  <svg class="cover-illustration" viewBox="0 0 340 240" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="bg-grad" cx="50%" cy="50%" r="70%">
+        <stop offset="0%" stop-color="#1a3a4a"/>
+        <stop offset="100%" stop-color="#0a1520"/>
+      </radialGradient>
+      <linearGradient id="human-grad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#4a9dd4"/>
+        <stop offset="100%" stop-color="#1a5276"/>
+      </linearGradient>
+    </defs>
+    <!-- Sky background -->
+    <rect width="340" height="240" rx="14" fill="url(#bg-grad)"/>
+    <!-- Stars -->
+    <circle cx="30" cy="22" r="1.2" fill="#fff" opacity="0.8"/>
+    <circle cx="80" cy="12" r="1" fill="#fff" opacity="0.6"/>
+    <circle cx="200" cy="18" r="1.5" fill="#fff" opacity="0.9"/>
+    <circle cx="300" cy="10" r="1" fill="#fff" opacity="0.7"/>
+    <circle cx="260" cy="30" r="0.8" fill="#fff" opacity="0.5"/>
+    <!-- Speech bubble human side -->
+    <rect x="14" y="60" width="110" height="48" rx="10" fill="url(#human-grad)" opacity="0.92"/>
+    <polygon points="50,108 40,122 70,108" fill="#1a5276"/>
+    <text x="69" y="79" font-family="Georgia,serif" font-size="9" fill="white" text-anchor="middle" opacity="0.9">Yesterday</text>
+    <text x="69" y="93" font-family="Georgia,serif" font-size="8.5" fill="#a8d4f0" text-anchor="middle">Tomorrow</text>
+    <text x="69" y="106" font-family="Georgia,serif" font-size="8" fill="#d4e9f7" text-anchor="middle">Creative</text>
+    <!-- Human stick figure -->
+    <circle cx="62" cy="140" r="14" fill="#f5cba7" stroke="#d4a574" stroke-width="1.5"/>
+    <line x1="62" y1="154" x2="62" y2="188" stroke="#f5cba7" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="62" y1="164" x2="42" y2="178" stroke="#f5cba7" stroke-width="3" stroke-linecap="round"/>
+    <line x1="62" y1="164" x2="82" y2="178" stroke="#f5cba7" stroke-width="3" stroke-linecap="round"/>
+    <line x1="62" y1="188" x2="44" y2="210" stroke="#f5cba7" stroke-width="3" stroke-linecap="round"/>
+    <line x1="62" y1="188" x2="80" y2="210" stroke="#f5cba7" stroke-width="3" stroke-linecap="round"/>
+    <!-- Human label -->
+    <text x="62" y="228" font-family="Georgia,serif" font-size="10" fill="#4a9dd4" text-anchor="middle" font-style="italic">Human</text>
+    <!-- Middle divider -->
+    <line x1="170" y1="50" x2="170" y2="230" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" stroke-dasharray="5,4"/>
+    <!-- VS text -->
+    <circle cx="170" cy="130" r="18" fill="rgba(212,134,10,0.25)" stroke="rgba(212,134,10,0.5)" stroke-width="1.5"/>
+    <text x="170" y="134" font-family="Georgia,serif" font-size="11" fill="#f5c842" text-anchor="middle" font-weight="bold">VS</text>
+    <!-- Animal speech bubble -->
+    <rect x="216" y="60" width="110" height="48" rx="10" fill="#2d4a1e" opacity="0.92"/>
+    <polygon points="280,108 270,122 300,108" fill="#2d4a1e"/>
+    <text x="271" y="82" font-family="Georgia,serif" font-size="18" text-anchor="middle">🐝</text>
+    <text x="271" y="100" font-family="Georgia,serif" font-size="8" fill="#a8e6a0" text-anchor="middle">Fixed signals</text>
+    <!-- Bee / animal side - bird -->
+    <ellipse cx="272" cy="168" rx="20" ry="13" fill="#e8b84b"/>
+    <circle cx="285" cy="160" r="9" fill="#e8b84b"/>
+    <ellipse cx="287" cy="158" rx="3" ry="2" fill="#c0392b"/>
+    <circle cx="289" cy="157" r="1.5" fill="#1a1409"/>
+    <polygon points="272,155 260,148 275,150" fill="#c9a023"/>
+    <polygon points="272,181 258,193 270,180" fill="#c9a023"/>
+    <text x="272" y="228" font-family="Georgia,serif" font-size="10" fill="#7bc87a" text-anchor="middle" font-style="italic">Animal</text>
+  </svg>
+
+  <div class="cover-title">Differences Between<br>Human and Animal Languages</div>
+  <div class="cover-subtitle">An Interactive English Learning E-Book</div>
+
+  <div class="cover-chapters">
+    <button class="chap-btn" onclick="goToPage(0)">📖 Article</button>
+    <button class="chap-btn" onclick="goToPage(1)">📚 Vocabulary</button>
+    <button class="chap-btn" onclick="goToPage(2)">✏️ Grammar</button>
+    <button class="chap-btn" onclick="goToPage(3)">🧩 Quiz</button>
+    <button class="chap-btn" onclick="goToPage(4)">✅ Answers</button>
+  </div>
+  <button class="start-btn" onclick="goToPage(0)">Start Reading →</button>
+</div>
+
+<!-- ===== PAGE 1: ARTICLE ===== -->
+<div class="page" id="page-0">
+  <div class="section-label">Section 1</div>
+  <div class="section-title red">Article</div>
+  <div class="divider"></div>
+
+  <div class="article-body">
+    <p>
+      Human language is a unique system of
+      <span class="keyword">communication<span class="keyword-tooltip">溝通 · noun</span></span>
+      that allows people to share complex ideas, emotions, and experiences. Unlike animals, humans can use language to talk about the past, present, and future. This ability is called
+      <span class="keyword">displacement<span class="keyword-tooltip">位移性 · noun</span></span>.
+      For example, a person can describe what happened yesterday or plan for tomorrow. Animals, however, usually communicate about
+      <span class="keyword">immediate<span class="keyword-tooltip">即時的 · adjective</span></span>
+      needs, such as food or danger.
+    </p>
+    <p>
+      Another important feature of human language is
+      <span class="keyword">creativity<span class="keyword-tooltip">創造力 · noun</span></span>.
+      Humans can produce an unlimited number of sentences using a limited set of words and rules. This means we can
+      <span class="keyword">express<span class="keyword-tooltip">表達 · verb</span></span>
+      new ideas that have never been said before. In contrast, animal communication systems are more
+      <span class="keyword">fixed<span class="keyword-tooltip">固定的 · adjective</span></span>.
+      For instance, bees perform a dance to show the location of food, but this system does not change much or allow new meanings.
+    </p>
+    <p>
+      Human language also has a complex
+      <span class="keyword">structure<span class="keyword-tooltip">結構 · noun</span></span>.
+      It includes grammar, which is a set of rules that organizes words into meaningful sentences. These rules help us understand each other clearly. Animal communication does not have the same level of structure. While some animals, like dolphins or birds, can produce different sounds, these sounds do not follow detailed
+      <span class="keyword">grammatical<span class="keyword-tooltip">文法的 · adjective</span></span>
+      rules like human language.
+    </p>
+    <p>
+      Finally, human language is learned socially and culturally. Children learn language by
+      <span class="keyword">interacting<span class="keyword-tooltip">互動 · verb</span></span>
+      with others in their community. Culture plays a big role in shaping how language is used. On the other hand, many animal communication systems are mostly
+      <span class="keyword">instinctive<span class="keyword-tooltip">本能的 · adjective</span></span>.
+      This means animals are born with the ability to communicate in certain ways, without needing to learn complex rules from others.
+    </p>
+  </div>
+
+  <div class="ornament">✦ ✦ ✦</div>
+  <p style="color:rgba(245,200,66,0.5); font-size:0.82rem; text-align:center; font-style:italic;">Hover over underlined words to see their Chinese meaning.</p>
+</div>
+
+<!-- ===== PAGE 2: VOCABULARY ===== -->
+<div class="page" id="page-1">
+  <div class="section-label">Section 2</div>
+  <div class="section-title">Vocabulary</div>
+  <div class="divider"></div>
+
+  <div class="vocab-grid">
+    <!-- 1 -->
+    <div class="vocab-card">
+      <div class="vocab-word">1. communication</div>
+      <div class="vocab-pos">noun</div>
+      <div class="vocab-zh">溝通</div>
+      <div class="vocab-ex">People use communication to share ideas.</div>
+      <div class="vocab-ex-zh">人們使用溝通來分享想法。</div>
+      <div class="vocab-ex" style="margin-top:6px">Good communication is important in teamwork.</div>
+      <div class="vocab-ex-zh">良好的溝通在團隊合作中很重要。</div>
+    </div>
+    <!-- 2 -->
+    <div class="vocab-card">
+      <div class="vocab-word">2. displacement</div>
+      <div class="vocab-pos">noun</div>
+      <div class="vocab-zh">位移性（談論非當下事物的能力）</div>
+      <div class="vocab-ex">Displacement allows us to talk about the future.</div>
+      <div class="vocab-ex-zh">位移性讓我們可以談論未來。</div>
+      <div class="vocab-ex" style="margin-top:6px">Animals usually lack displacement.</div>
+      <div class="vocab-ex-zh">動物通常缺乏位移性。</div>
+    </div>
+    <!-- 3 -->
+    <div class="vocab-card">
+      <div class="vocab-word">3. immediate</div>
+      <div class="vocab-pos">adjective</div>
+      <div class="vocab-zh">即時的</div>
+      <div class="vocab-ex">He needs immediate help.</div>
+      <div class="vocab-ex-zh">他需要即時的幫助。</div>
+      <div class="vocab-ex" style="margin-top:6px">Animals react to immediate danger.</div>
+      <div class="vocab-ex-zh">動物會對即時的危險做出反應。</div>
+    </div>
+    <!-- 4 -->
+    <div class="vocab-card">
+      <div class="vocab-word">4. creativity</div>
+      <div class="vocab-pos">noun</div>
+      <div class="vocab-zh">創造力</div>
+      <div class="vocab-ex">Creativity is important in art.</div>
+      <div class="vocab-ex-zh">創造力在藝術中很重要。</div>
+      <div class="vocab-ex" style="margin-top:6px">Children show creativity when they play.</div>
+      <div class="vocab-ex-zh">孩子在玩耍時展現創造力。</div>
+    </div>
+    <!-- 5 -->
+    <div class="vocab-card">
+      <div class="vocab-word">5. express</div>
+      <div class="vocab-pos">verb</div>
+      <div class="vocab-zh">表達</div>
+      <div class="vocab-ex">She can express her feelings well.</div>
+      <div class="vocab-ex-zh">她能很好地表達自己的感受。</div>
+      <div class="vocab-ex" style="margin-top:6px">Language helps us express ideas.</div>
+      <div class="vocab-ex-zh">語言幫助我們表達想法。</div>
+    </div>
+    <!-- 6 -->
+    <div class="vocab-card">
+      <div class="vocab-word">6. fixed</div>
+      <div class="vocab-pos">adjective</div>
+      <div class="vocab-zh">固定的</div>
+      <div class="vocab-ex">The schedule is fixed.</div>
+      <div class="vocab-ex-zh">時間表是固定的。</div>
+      <div class="vocab-ex" style="margin-top:6px">Animal signals are often fixed.</div>
+      <div class="vocab-ex-zh">動物的訊號通常是固定的。</div>
+    </div>
+    <!-- 7 -->
+    <div class="vocab-card">
+      <div class="vocab-word">7. structure</div>
+      <div class="vocab-pos">noun</div>
+      <div class="vocab-zh">結構</div>
+      <div class="vocab-ex">This building has a strong structure.</div>
+      <div class="vocab-ex-zh">這棟建築有堅固的結構。</div>
+      <div class="vocab-ex" style="margin-top:6px">Language structure is important.</div>
+      <div class="vocab-ex-zh">語言結構很重要。</div>
+    </div>
+    <!-- 8 -->
+    <div class="vocab-card">
+      <div class="vocab-word">8. grammatical</div>
+      <div class="vocab-pos">adjective</div>
+      <div class="vocab-zh">文法的</div>
+      <div class="vocab-ex">This sentence is not grammatical.</div>
+      <div class="vocab-ex-zh">這句話不符合文法。</div>
+      <div class="vocab-ex" style="margin-top:6px">Students learn grammatical rules.</div>
+      <div class="vocab-ex-zh">學生學習文法規則。</div>
+    </div>
+    <!-- 9 -->
+    <div class="vocab-card">
+      <div class="vocab-word">9. interacting</div>
+      <div class="vocab-pos">verb</div>
+      <div class="vocab-zh">互動</div>
+      <div class="vocab-ex">Children learn by interacting with others.</div>
+      <div class="vocab-ex-zh">孩子透過與他人互動學習。</div>
+      <div class="vocab-ex" style="margin-top:6px">Social media helps people interact.</div>
+      <div class="vocab-ex-zh">社群媒體幫助人們互動。</div>
+    </div>
+    <!-- 10 -->
+    <div class="vocab-card">
+      <div class="vocab-word">10. instinctive</div>
+      <div class="vocab-pos">adjective</div>
+      <div class="vocab-zh">本能的</div>
+      <div class="vocab-ex">Birds have instinctive behaviors.</div>
+      <div class="vocab-ex-zh">鳥類有本能行為。</div>
+      <div class="vocab-ex" style="margin-top:6px">His reaction was instinctive.</div>
+      <div class="vocab-ex-zh">他的反應是本能的。</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE 3: GRAMMAR ===== -->
+<div class="page" id="page-2">
+  <div class="section-label">Section 3</div>
+  <div class="section-title">Grammar Patterns</div>
+  <div class="divider"></div>
+
+  <div class="grammar-card">
+    <div class="grammar-pattern">1. "allows someone to + verb"</div>
+    <div class="grammar-desc">Used to show permission or ability.</div>
+    <div class="grammar-example">Language allows people to share ideas.</div>
+    <div class="grammar-subs">
+      This app allows users to chat online. <span class="zh">· 這個應用程式讓使用者可以聊天。</span><br>
+      The teacher allows students to ask questions. <span class="zh">· 老師允許學生發問。</span>
+    </div>
+  </div>
+
+  <div class="grammar-card">
+    <div class="grammar-pattern">2. "Unlike + noun"</div>
+    <div class="grammar-desc">Used to show contrast.</div>
+    <div class="grammar-example">Unlike animals, humans use complex language.</div>
+    <div class="grammar-subs">
+      Unlike him, she is very patient. <span class="zh">· 不像他，她很有耐心。</span><br>
+      Unlike summer, winter is cold. <span class="zh">· 不像夏天，冬天很冷。</span>
+    </div>
+  </div>
+
+  <div class="grammar-card">
+    <div class="grammar-pattern">3. "This means (that)..."</div>
+    <div class="grammar-desc">Used to explain or clarify.</div>
+    <div class="grammar-example">This means we can express new ideas.</div>
+    <div class="grammar-subs">
+      He is late. This means he missed the bus. <span class="zh">· 他遲到了，這表示他錯過公車。</span><br>
+      She studies hard. This means she will succeed. <span class="zh">· 她努力學習，這表示她會成功。</span>
+    </div>
+  </div>
+
+  <div class="grammar-card">
+    <div class="grammar-pattern">4. "While + clause"</div>
+    <div class="grammar-desc">Used to show contrast.</div>
+    <div class="grammar-example">While animals communicate, they lack grammar.</div>
+    <div class="grammar-subs">
+      While I like coffee, I prefer tea. <span class="zh">· 雖然我喜歡咖啡，但我更喜歡茶。</span><br>
+      While he is young, he is very wise. <span class="zh">· 雖然他年輕，但他很聰明。</span>
+    </div>
+  </div>
+
+  <div class="grammar-card">
+    <div class="grammar-pattern">5. "without + V-ing"</div>
+    <div class="grammar-desc">Used to show absence of an action.</div>
+    <div class="grammar-example">...without needing to learn rules.</div>
+    <div class="grammar-subs">
+      He left without saying goodbye. <span class="zh">· 他沒有說再見就離開了。</span><br>
+      She passed the test without studying. <span class="zh">· 她沒有讀書就通過考試。</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE 4: QUIZ ===== -->
+<div class="page" id="page-3">
+  <div class="section-label">Section 4</div>
+  <div class="section-title">Evaluation</div>
+  <div class="divider"></div>
+  <p class="quiz-intro">Test your understanding! Click an option or fill in the blanks.</p>
+
+  <!-- Multiple Choice -->
+  <div class="q-section-title">Part A — Multiple Choice</div>
+
+  <div class="question-block" id="q1">
+    <div class="question-text">1. What is "displacement"?</div>
+    <div class="options">
+      <button class="option-btn" onclick="checkMC(this,'q1','B')">A. Talking about the present</button>
+      <button class="option-btn" onclick="checkMC(this,'q1','B')">B. Talking about past and future</button>
+      <button class="option-btn" onclick="checkMC(this,'q1','B')">C. Making sounds</button>
+      <button class="option-btn" onclick="checkMC(this,'q1','B')">D. Using grammar</button>
+    </div>
+    <div class="feedback-msg" id="fb-q1"></div>
+  </div>
+
+  <div class="question-block" id="q2">
+    <div class="question-text">2. What makes human language creative?</div>
+    <div class="options">
+      <button class="option-btn" onclick="checkMC(this,'q2','C')">A. Fixed signals</button>
+      <button class="option-btn" onclick="checkMC(this,'q2','C')">B. Limited words</button>
+      <button class="option-btn" onclick="checkMC(this,'q2','C')">C. Unlimited sentences</button>
+      <button class="option-btn" onclick="checkMC(this,'q2','C')">D. Animal sounds</button>
+    </div>
+    <div class="feedback-msg" id="fb-q2"></div>
+  </div>
+
+  <div class="question-block" id="q3">
+    <div class="question-text">3. What do animals mostly communicate about?</div>
+    <div class="options">
+      <button class="option-btn" onclick="checkMC(this,'q3','C')">A. Culture</button>
+      <button class="option-btn" onclick="checkMC(this,'q3','C')">B. Grammar</button>
+      <button class="option-btn" onclick="checkMC(this,'q3','C')">C. Immediate needs</button>
+      <button class="option-btn" onclick="checkMC(this,'q3','C')">D. History</button>
+    </div>
+    <div class="feedback-msg" id="fb-q3"></div>
+  </div>
+
+  <div class="question-block" id="q4">
+    <div class="question-text">4. What does grammar do?</div>
+    <div class="options">
+      <button class="option-btn" onclick="checkMC(this,'q4','B')">A. Creates sounds</button>
+      <button class="option-btn" onclick="checkMC(this,'q4','B')">B. Organizes words</button>
+      <button class="option-btn" onclick="checkMC(this,'q4','B')">C. Limits ideas</button>
+      <button class="option-btn" onclick="checkMC(this,'q4','B')">D. Stops communication</button>
+    </div>
+    <div class="feedback-msg" id="fb-q4"></div>
+  </div>
+
+  <div class="question-block" id="q5">
+    <div class="question-text">5. How do children learn language?</div>
+    <div class="options">
+      <button class="option-btn" onclick="checkMC(this,'q5','C')">A. Alone</button>
+      <button class="option-btn" onclick="checkMC(this,'q5','C')">B. By instinct</button>
+      <button class="option-btn" onclick="checkMC(this,'q5','C')">C. By interacting</button>
+      <button class="option-btn" onclick="checkMC(this,'q5','C')">D. By reading only</button>
+    </div>
+    <div class="feedback-msg" id="fb-q5"></div>
+  </div>
+
+  <!-- Cloze -->
+  <div class="q-section-title" style="margin-top:36px;">Part B — Fill in the Blank</div>
+
+  <div class="word-bank">
+    <span class="word-bank-label">Word Bank:</span>
+    <span class="word-chip" onclick="useWord(this,'communication')">communication</span>
+    <span class="word-chip" onclick="useWord(this,'creativity')">creativity</span>
+    <span class="word-chip" onclick="useWord(this,'structure')">structure</span>
+    <span class="word-chip" onclick="useWord(this,'immediate')">immediate</span>
+    <span class="word-chip" onclick="useWord(this,'instinctive')">instinctive</span>
+  </div>
+
+  <div class="cloze-block"><span class="cloze-num">1.</span> Animals respond to <input class="cloze-input" id="c1" placeholder="________" data-answer="immediate"> needs.</div>
+  <div class="cloze-block"><span class="cloze-num">2.</span> Human language has complex <input class="cloze-input" id="c2" placeholder="________" data-answer="structure">.</div>
+  <div class="cloze-block"><span class="cloze-num">3.</span> People use <input class="cloze-input" id="c3" placeholder="________" data-answer="communication"> to share ideas.</div>
+  <div class="cloze-block"><span class="cloze-num">4.</span> Animals often have <input class="cloze-input" id="c4" placeholder="________" data-answer="instinctive"> behavior.</div>
+  <div class="cloze-block"><span class="cloze-num">5.</span> Language shows human <input class="cloze-input" id="c5" placeholder="________" data-answer="creativity">.</div>
+
+  <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
+    <button class="check-btn" onclick="checkCloze()">Check Answers</button>
+    <button class="reset-btn" onclick="resetCloze()">Reset</button>
+  </div>
+
+  <div id="score-banner">
+    Cloze Score: <strong id="cloze-score"></strong> / 5 &nbsp;|&nbsp; <span id="cloze-msg"></span>
+  </div>
+</div>
+
+<!-- ===== PAGE 5: ANSWERS ===== -->
+<div class="page" id="page-4">
+  <div class="section-label">Section 5</div>
+  <div class="section-title">Answers & Explanations</div>
+  <div class="divider"></div>
+
+  <div class="answer-block">
+    <h3>Part A — Multiple Choice Answers</h3>
+    <div class="answer-item"><span class="ans-num">1.</span><span><span class="ans-key">B</span> &nbsp;— <span class="ans-exp">Displacement means talking about past and future, not just the present moment.</span></span></div>
+    <div class="answer-item"><span class="ans-num">2.</span><span><span class="ans-key">C</span> &nbsp;— <span class="ans-exp">Humans can create an unlimited number of sentences from a limited set of words.</span></span></div>
+    <div class="answer-item"><span class="ans-num">3.</span><span><span class="ans-key">C</span> &nbsp;— <span class="ans-exp">Animals usually communicate about immediate needs such as food or danger.</span></span></div>
+    <div class="answer-item"><span class="ans-num">4.</span><span><span class="ans-key">B</span> &nbsp;— <span class="ans-exp">Grammar is a set of rules that organizes words into meaningful sentences.</span></span></div>
+    <div class="answer-item"><span class="ans-num">5.</span><span><span class="ans-key">C</span> &nbsp;— <span class="ans-exp">Children learn language through social interaction with their community.</span></span></div>
+  </div>
+
+  <div class="answer-block">
+    <h3>Part B — Cloze Answers</h3>
+    <div class="answer-item"><span class="ans-num">1.</span><span><span class="ans-key">immediate</span> &nbsp;— <span class="ans-exp">Animals react to dangers or needs happening right now.</span></span></div>
+    <div class="answer-item"><span class="ans-num">2.</span><span><span class="ans-key">structure</span> &nbsp;— <span class="ans-exp">Human language follows grammatical rules that give it a complex structure.</span></span></div>
+    <div class="answer-item"><span class="ans-num">3.</span><span><span class="ans-key">communication</span> &nbsp;— <span class="ans-exp">Language is the primary tool of human communication.</span></span></div>
+    <div class="answer-item"><span class="ans-num">4.</span><span><span class="ans-key">instinctive</span> &nbsp;— <span class="ans-exp">Many animal communication patterns are innate, not learned from others.</span></span></div>
+    <div class="answer-item"><span class="ans-num">5.</span><span><span class="ans-key">creativity</span> &nbsp;— <span class="ans-exp">The ability to produce never-before-said sentences shows human creativity.</span></span></div>
+  </div>
+
+  <div class="ornament">✦ ✦ ✦</div>
+  <p style="color:rgba(245,200,66,0.45); font-size:0.85rem; text-align:center; font-style:italic; padding-bottom:80px;">Great work! You've completed the e-book. 🎉</p>
+</div>
+
+<!-- ===== BOTTOM NAV ===== -->
+<div id="bottom-controls">
+  <button class="ctrl-btn home" onclick="goTo('cover')" title="Home">🏠</button>
+  <button class="ctrl-btn" id="prev-btn" onclick="prevPage()" disabled>← Prev</button>
+  <button class="ctrl-btn" id="next-btn" onclick="nextPage()">Next →</button>
+</div>
+
+<script>
+  const PAGES = ['page-0','page-1','page-2','page-3','page-4'];
+  const PAGE_NAMES = ['Article','Vocabulary','Grammar','Quiz','Answers'];
+  let currentPage = -1; // -1 = cover
+
+  function goTo(id) {
+    // Hide all pages
+    PAGES.forEach(p => document.getElementById(p).classList.remove('active'));
+    document.getElementById('cover').style.display = 'none';
+    document.getElementById('bottom-controls').classList.remove('visible');
+    document.getElementById('progress-bar').style.display = 'none';
+    document.getElementById('page-counter').textContent = '';
+
+    if (id === 'cover') {
+      document.getElementById('cover').style.display = 'flex';
+      currentPage = -1;
+    }
+  }
+
+  function goToPage(idx) {
+    goTo('');
+    PAGES.forEach(p => document.getElementById(p).classList.remove('active'));
+    document.getElementById('cover').style.display = 'none';
+    document.getElementById(PAGES[idx]).classList.add('active');
+    currentPage = idx;
+
+    // Show controls
+    document.getElementById('bottom-controls').classList.add('visible');
+    document.getElementById('progress-bar').style.display = 'block';
+    const pct = ((idx + 1) / PAGES.length) * 100;
+    document.getElementById('progress-bar').style.width = pct + '%';
+    document.getElementById('prev-btn').disabled = idx === 0;
+    document.getElementById('next-btn').disabled = idx === PAGES.length - 1;
+    document.getElementById('page-counter').textContent = `${idx + 1} / ${PAGES.length}`;
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function nextPage() { if (currentPage < PAGES.length - 1) goToPage(currentPage + 1); }
+  function prevPage() { if (currentPage > 0) goToPage(currentPage - 1); }
+
+  // ===== MULTIPLE CHOICE =====
+  const MC_ANSWERS = { q1:'B', q2:'C', q3:'C', q4:'B', q5:'C' };
+
+  function checkMC(btn, qId, correctLetter) {
+    const block = document.getElementById(qId);
+    if (block.dataset.done) return;
+    block.dataset.done = '1';
+    const opts = block.querySelectorAll('.option-btn');
+    const letters = ['A','B','C','D'];
+    const chosen = letters[Array.from(opts).indexOf(btn)];
+    opts.forEach((b, i) => {
+      b.disabled = true;
+      if (letters[i] === correctLetter) b.classList.add('correct');
+      else if (b === btn) b.classList.add('wrong');
+    });
+    const fb = document.getElementById('fb-' + qId);
+    if (chosen === correctLetter) {
+      fb.textContent = '✓ Correct!';
+      fb.className = 'feedback-msg show ok';
+    } else {
+      fb.textContent = `✗ Incorrect. The answer is ${correctLetter}.`;
+      fb.className = 'feedback-msg show nope';
+    }
+  }
+
+  // ===== CLOZE =====
+  let selectedWord = null;
+
+  function useWord(chip, word) {
+    // If clicking a word chip, fill it into the focused/selected input
+    const focused = document.querySelector('.cloze-input:focus') || document.querySelector('.cloze-input[data-selected]');
+    if (focused) {
+      focused.value = word;
+      focused.removeAttribute('data-selected');
+      chip.classList.add('used');
+    } else {
+      // Store for next click on input
+      document.querySelectorAll('.word-chip').forEach(c => c.style.outline = 'none');
+      chip.style.outline = '2.5px solid #f5c842';
+      selectedWord = { word, chip };
+    }
+  }
+
+  document.querySelectorAll('.cloze-input').forEach(inp => {
+    inp.addEventListener('click', () => {
+      if (selectedWord) {
+        inp.value = selectedWord.word;
+        selectedWord.chip.classList.add('used');
+        selectedWord.chip.style.outline = 'none';
+        selectedWord = null;
+      }
+    });
+  });
+
+  function checkCloze() {
+    const answers = { c1:'immediate', c2:'structure', c3:'communication', c4:'instinctive', c5:'creativity' };
+    let score = 0;
+    for (const [id, ans] of Object.entries(answers)) {
+      const inp = document.getElementById(id);
+      const val = inp.value.trim().toLowerCase();
+      inp.classList.remove('correct','wrong');
+      if (val === ans) { inp.classList.add('correct'); score++; }
+      else { inp.classList.add('wrong'); }
+    }
+    const banner = document.getElementById('score-banner');
+    document.getElementById('cloze-score').textContent = score;
+    const msgs = ['Keep trying! 💪', 'Good effort! 😊', 'Well done! 👍', 'Great job! ⭐', 'Excellent! 🏆', 'Perfect! 🎉'];
+    document.getElementById('cloze-msg').textContent = msgs[score];
+    banner.className = 'show';
+    banner.style.display = 'block';
+  }
+
+  function resetCloze() {
+    ['c1','c2','c3','c4','c5'].forEach(id => {
+      const inp = document.getElementById(id);
+      inp.value = '';
+      inp.classList.remove('correct','wrong');
+    });
+    document.querySelectorAll('.word-chip').forEach(c => { c.classList.remove('used'); c.style.outline='none'; });
+    document.getElementById('score-banner').style.display = 'none';
+    document.getElementById('score-banner').className = '';
+    selectedWord = null;
+    // Reset MC
+    ['q1','q2','q3','q4','q5'].forEach(qId => {
+      const block = document.getElementById(qId);
+      delete block.dataset.done;
+      block.querySelectorAll('.option-btn').forEach(b => {
+        b.disabled = false;
+        b.classList.remove('correct','wrong');
+      });
+      const fb = document.getElementById('fb-' + qId);
+      fb.className = 'feedback-msg';
+      fb.textContent = '';
+    });
+  }
+</script>
+</body>
+</html>
