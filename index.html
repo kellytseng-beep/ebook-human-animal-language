@@ -609,6 +609,79 @@
     user-select: none;
   }
 
+  /* ===== AUDIO BUTTONS ===== */
+  .tts-btn {
+    background: var(--amber);
+    color: #1a100a;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    flex-shrink: 0;
+  }
+  .tts-btn:hover { background: var(--amber-light); transform: scale(1.08); }
+  .tts-btn.playing {
+    background: var(--teal);
+    color: white;
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(26,122,110,0.55); }
+    50%      { box-shadow: 0 0 0 8px rgba(26,122,110,0);   }
+  }
+  .article-body p { position: relative; padding-left: 44px; }
+  .article-body p .tts-btn {
+    position: absolute;
+    left: 0;
+    top: 2px;
+  }
+  .vocab-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .read-all-bar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 18px;
+    padding: 10px 16px;
+    background: rgba(212,134,10,0.08);
+    border: 1px solid rgba(212,134,10,0.3);
+    border-radius: 10px;
+    flex-wrap: wrap;
+  }
+  .read-all-bar .label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--amber);
+    font-weight: 700;
+  }
+  .read-all-bar button {
+    background: var(--teal);
+    color: white;
+    border: none;
+    border-radius: 18px;
+    padding: 6px 16px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.2s;
+  }
+  .read-all-bar button:hover { background: #14605a; }
+  .read-all-bar button.stop { background: var(--red); }
+  .read-all-bar button.stop:hover { background: #962b1f; }
+
   /* Scrollbar */
   ::-webkit-scrollbar { width: 8px; }
   ::-webkit-scrollbar-track { background: #1a100a; }
@@ -711,8 +784,16 @@
   <div class="section-title red">Article</div>
   <div class="divider"></div>
 
+  <div class="read-all-bar">
+    <span class="label">🎧 Listen</span>
+    <button onclick="readArticle()">▶ Read Article</button>
+    <button class="stop" onclick="stopSpeech()">■ Stop</button>
+    <span style="color:var(--gray); font-size:0.78rem;">or click 🔊 next to a paragraph</span>
+  </div>
+
   <div class="article-body">
     <p>
+      <button class="tts-btn" onclick="speakP(this)" title="Read paragraph">🔊</button>
       Human language is a unique system of
       <span class="keyword">communication<span class="keyword-tooltip">溝通 · noun</span></span>
       that allows people to share complex ideas, emotions, and experiences. Unlike animals, humans can use language to talk about the past, present, and future. This ability is called
@@ -722,6 +803,7 @@
       needs, such as food or danger.
     </p>
     <p>
+      <button class="tts-btn" onclick="speakP(this)" title="Read paragraph">🔊</button>
       Another important feature of human language is
       <span class="keyword">creativity<span class="keyword-tooltip">創造力 · noun</span></span>.
       Humans can produce an unlimited number of sentences using a limited set of words and rules. This means we can
@@ -731,6 +813,7 @@
       For instance, bees perform a dance to show the location of food, but this system does not change much or allow new meanings.
     </p>
     <p>
+      <button class="tts-btn" onclick="speakP(this)" title="Read paragraph">🔊</button>
       Human language also has a complex
       <span class="keyword">structure<span class="keyword-tooltip">結構 · noun</span></span>.
       It includes grammar, which is a set of rules that organizes words into meaningful sentences. These rules help us understand each other clearly. Animal communication does not have the same level of structure. While some animals, like dolphins or birds, can produce different sounds, these sounds do not follow detailed
@@ -738,6 +821,7 @@
       rules like human language.
     </p>
     <p>
+      <button class="tts-btn" onclick="speakP(this)" title="Read paragraph">🔊</button>
       Finally, human language is learned socially and culturally. Children learn language by
       <span class="keyword">interacting<span class="keyword-tooltip">互動 · verb</span></span>
       with others in their community. Culture plays a big role in shaping how language is used. On the other hand, many animal communication systems are mostly
@@ -1046,11 +1130,113 @@
 </div>
 
 <script>
+  // ===== TEXT-TO-SPEECH =====
+  const synth = window.speechSynthesis;
+  let currentBtn = null;
+
+  function pickVoice() {
+    const voices = synth.getVoices();
+    return voices.find(v => /en-US/i.test(v.lang) && /female|samantha|zira/i.test(v.name))
+        || voices.find(v => /en-US/i.test(v.lang))
+        || voices.find(v => /^en/i.test(v.lang))
+        || voices[0];
+  }
+
+  function speak(text, btn) {
+    stopSpeech();
+    if (!('speechSynthesis' in window)) {
+      alert('Sorry, your browser does not support text-to-speech.');
+      return;
+    }
+    const u = new SpeechSynthesisUtterance(text);
+    const v = pickVoice();
+    if (v) u.voice = v;
+    u.rate = 0.9;
+    u.pitch = 1;
+    if (btn) {
+      currentBtn = btn;
+      btn.classList.add('playing');
+      u.onend = u.onerror = () => {
+        btn.classList.remove('playing');
+        if (currentBtn === btn) currentBtn = null;
+      };
+    }
+    synth.speak(u);
+  }
+
+  function stopSpeech() {
+    if (synth.speaking || synth.pending) synth.cancel();
+    document.querySelectorAll('.tts-btn.playing').forEach(b => b.classList.remove('playing'));
+    currentBtn = null;
+  }
+
+  function speakP(btn) {
+    const p = btn.closest('p');
+    const text = p.textContent.replace(/🔊/g, '').trim();
+    speak(text, btn);
+  }
+
+  function readArticle() {
+    stopSpeech();
+    const paras = Array.from(document.querySelectorAll('#page-0 .article-body p'));
+    let i = 0;
+    function readNext() {
+      if (i >= paras.length) return;
+      const p = paras[i];
+      const btn = p.querySelector('.tts-btn');
+      const text = p.textContent.replace(/🔊/g, '').trim();
+      const u = new SpeechSynthesisUtterance(text);
+      const v = pickVoice();
+      if (v) u.voice = v;
+      u.rate = 0.9;
+      if (btn) btn.classList.add('playing');
+      u.onend = () => {
+        if (btn) btn.classList.remove('playing');
+        i++;
+        readNext();
+      };
+      u.onerror = () => { if (btn) btn.classList.remove('playing'); };
+      synth.speak(u);
+    }
+    readNext();
+  }
+
+  function speakVocab(card) {
+    const word = card.querySelector('.vocab-word').textContent.replace(/^\d+\.\s*/, '').trim();
+    const examples = Array.from(card.querySelectorAll('.vocab-ex')).map(e => e.textContent.trim()).join(' ');
+    const btn = card.querySelector('.tts-btn');
+    speak(`${word}. ${word}. ${examples}`, btn);
+  }
+
+  // Auto-inject vocab speaker buttons
+  window.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.vocab-card').forEach(card => {
+      card.style.position = 'relative';
+      const btn = document.createElement('button');
+      btn.className = 'tts-btn';
+      btn.textContent = '🔊';
+      btn.title = 'Pronounce';
+      btn.style.position = 'absolute';
+      btn.style.top = '14px';
+      btn.style.right = '14px';
+      btn.onclick = (e) => { e.stopPropagation(); speakVocab(card); };
+      card.appendChild(btn);
+    });
+    // Some browsers load voices async — trigger a load
+    if (synth && synth.getVoices().length === 0) {
+      synth.onvoiceschanged = () => {};
+    }
+  });
+
+  // Stop speech when navigating
+  window.addEventListener('beforeunload', stopSpeech);
+
   const PAGES = ['page-0','page-1','page-2','page-3','page-4'];
   const PAGE_NAMES = ['Article','Vocabulary','Grammar','Quiz','Answers'];
   let currentPage = -1; // -1 = cover
 
   function goTo(id) {
+    stopSpeech();
     // Hide all pages
     PAGES.forEach(p => document.getElementById(p).classList.remove('active'));
     document.getElementById('cover').style.display = 'none';
