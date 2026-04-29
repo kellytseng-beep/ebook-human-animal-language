@@ -1130,82 +1130,77 @@
 </div>
 
 <script>
-  // ===== TEXT-TO-SPEECH =====
-  const synth = window.speechSynthesis;
+  // ===== AUDIO PLAYBACK (pre-recorded MP3s) =====
+  const audioPlayer = new Audio();
   let currentBtn = null;
 
-  function pickVoice() {
-    const voices = synth.getVoices();
-    return voices.find(v => /en-US/i.test(v.lang) && /female|samantha|zira/i.test(v.name))
-        || voices.find(v => /en-US/i.test(v.lang))
-        || voices.find(v => /^en/i.test(v.lang))
-        || voices[0];
-  }
-
-  function speak(text, btn) {
-    stopSpeech();
-    if (!('speechSynthesis' in window)) {
-      alert('Sorry, your browser does not support text-to-speech.');
-      return;
-    }
-    const u = new SpeechSynthesisUtterance(text);
-    const v = pickVoice();
-    if (v) u.voice = v;
-    u.rate = 0.9;
-    u.pitch = 1;
-    if (btn) {
-      currentBtn = btn;
-      btn.classList.add('playing');
-      u.onend = u.onerror = () => {
-        btn.classList.remove('playing');
-        if (currentBtn === btn) currentBtn = null;
-      };
-    }
-    synth.speak(u);
-  }
+  audioPlayer.addEventListener('ended', () => {
+    if (currentBtn) { currentBtn.classList.remove('playing'); currentBtn = null; }
+    if (articleQueue && articleQueue.length) playNextInQueue();
+  });
+  audioPlayer.addEventListener('error', () => {
+    if (currentBtn) { currentBtn.classList.remove('playing'); currentBtn = null; }
+    articleQueue = null;
+  });
 
   function stopSpeech() {
-    if (synth.speaking || synth.pending) synth.cancel();
+    audioPlayer.pause();
+    audioPlayer.currentTime = 0;
+    articleQueue = null;
     document.querySelectorAll('.tts-btn.playing').forEach(b => b.classList.remove('playing'));
     currentBtn = null;
   }
 
-  function speakP(btn) {
-    const p = btn.closest('p');
-    const text = p.textContent.replace(/🔊/g, '').trim();
-    speak(text, btn);
+  function playFile(src, btn) {
+    stopSpeech();
+    audioPlayer.src = src;
+    if (btn) {
+      currentBtn = btn;
+      btn.classList.add('playing');
+    }
+    const p = audioPlayer.play();
+    if (p && p.catch) {
+      p.catch(() => {
+        if (btn) btn.classList.remove('playing');
+        currentBtn = null;
+        alert('Could not play audio. Please tap again or check your connection.');
+      });
+    }
   }
 
+  function speakP(btn) {
+    const p = btn.closest('p');
+    const idx = Array.from(document.querySelectorAll('#page-0 .article-body p')).indexOf(p) + 1;
+    playFile(`audio/article_p${idx}.mp3`, btn);
+  }
+
+  let articleQueue = null;
   function readArticle() {
     stopSpeech();
     const paras = Array.from(document.querySelectorAll('#page-0 .article-body p'));
-    let i = 0;
-    function readNext() {
-      if (i >= paras.length) return;
-      const p = paras[i];
-      const btn = p.querySelector('.tts-btn');
-      const text = p.textContent.replace(/🔊/g, '').trim();
-      const u = new SpeechSynthesisUtterance(text);
-      const v = pickVoice();
-      if (v) u.voice = v;
-      u.rate = 0.9;
-      if (btn) btn.classList.add('playing');
-      u.onend = () => {
-        if (btn) btn.classList.remove('playing');
-        i++;
-        readNext();
-      };
-      u.onerror = () => { if (btn) btn.classList.remove('playing'); };
-      synth.speak(u);
-    }
-    readNext();
+    articleQueue = paras.map((p, i) => ({
+      src: `audio/article_p${i + 1}.mp3`,
+      btn: p.querySelector('.tts-btn'),
+    }));
+    playNextInQueue();
+  }
+
+  function playNextInQueue() {
+    if (!articleQueue || !articleQueue.length) { articleQueue = null; return; }
+    const next = articleQueue.shift();
+    audioPlayer.src = next.src;
+    currentBtn = next.btn;
+    if (next.btn) next.btn.classList.add('playing');
+    audioPlayer.play().catch(() => {
+      if (next.btn) next.btn.classList.remove('playing');
+      articleQueue = null;
+    });
   }
 
   function speakVocab(card) {
     const word = card.querySelector('.vocab-word').textContent.replace(/^\d+\.\s*/, '').trim();
-    const examples = Array.from(card.querySelectorAll('.vocab-ex')).map(e => e.textContent.trim()).join(' ');
     const btn = card.querySelector('.tts-btn');
-    speak(`${word}. ${word}. ${examples}`, btn);
+    playFile(`audio/vocab_${word}.mp3`, btn);
   }
 
   // Auto-inject vocab speaker buttons
@@ -1222,13 +1217,8 @@
       btn.onclick = (e) => { e.stopPropagation(); speakVocab(card); };
       card.appendChild(btn);
     });
-    // Some browsers load voices async — trigger a load
-    if (synth && synth.getVoices().length === 0) {
-      synth.onvoiceschanged = () => {};
-    }
   });
 
-  // Stop speech when navigating
   window.addEventListener('beforeunload', stopSpeech);
 
   const PAGES = ['page-0','page-1','page-2','page-3','page-4'];
